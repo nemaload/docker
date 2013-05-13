@@ -32,6 +32,7 @@ type Runtime struct {
 	kernelVersion  *KernelVersionInfo
 	autoRestart    bool
 	volumes        *Graph
+	binds          map[string]string
 }
 
 var sysInitPath string
