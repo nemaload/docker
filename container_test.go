@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"path"
 	"regexp"
 	"sort"
 	"strings"
@@ -1169,4 +1170,77 @@ func BenchmarkRunParallel(b *testing.B) {
 	if len(errors) > 0 {
 		b.Fatal(errors)
 	}
+}
+
+func TestBindMounts(t *testing.T) {
+	runtime, err := newTestRuntime()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer nuke(runtime)
+	tmpDir, err := ioutil.TempDir("", "docker-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpFile := path.Join(tmpDir, "touch-me")
+	_, err = os.Create(tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// test reading from bind mount
+	bind_str := fmt.Sprintf("%s:/tmp:ro", tmpDir)
+	container, err := NewBuilder(runtime).Create(&Config{
+		Image: GetTestImage(runtime).Id,
+		Cmd:   []string{"ls", "/tmp"},
+		Binds: []string{bind_str},
+	},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer runtime.Destroy(container)
+
+	stdout, err := container.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stdout.Close()
+	if err := container.Start(); err != nil {
+		t.Fatal(err)
+	}
+	container.Wait()
+	output, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(output), "touch-me") {
+		t.Fatal("Container failed to read from bind mount")
+	}
+	// test writing to bind mount
+	bind_str2 := fmt.Sprintf("%s:/tmp:rw", tmpDir)
+	container2, err := NewBuilder(runtime).Create(&Config{
+		Image: GetTestImage(runtime).Id,
+		Cmd:   []string{"touch", "/tmp/holla"},
+		Binds: []string{bind_str2},
+	},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer runtime.Destroy(container2)
+
+	if err := container2.Start(); err != nil {
+		t.Fatal(err)
+	}
+	container2.Wait()
+	fileinfo, err := ioutil.ReadDir(tmpDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range fileinfo {
+		if f.Name() == "holla" {
+			return
+		}
+	}
+	t.Fatal("Container failed to write to bind mount")
 }
