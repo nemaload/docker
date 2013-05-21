@@ -1,3 +1,9 @@
+lxc-docker (0.3.99git-1) UNRELEASED; urgency=low
+
+  - (This is a placeholder for next release's comments. This is a Git version build.)
+
+ -- Petr Baudis <pasky@ucw.cz>  Tue, 21 May 2013 02:27:17 +0200
+
 lxc-docker (0.3.2-1) UNRELEASED; urgency=low
   - Runtime: Store the actual archive on commit
   - Registry: Improve the checksum process

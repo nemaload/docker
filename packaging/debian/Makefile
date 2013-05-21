@@ -33,7 +33,8 @@ install:
 debian:
 	# Prepare docker source from revision ${VERSION_TAG}
 	rm -rf ${BUILD_SRC} ${PKG_NAME}_[0-9]*
-	git clone file://$(ROOT_PATH) ${BUILD_SRC}/src/${GITHUB_PATH} --branch ${VERSION_TAG} --depth 1
+	#git clone file://$(ROOT_PATH) ${BUILD_SRC}/src/${GITHUB_PATH} --branch ${VERSION_TAG} --depth 1
+	git clone file://$(ROOT_PATH) ${BUILD_SRC}/src/${GITHUB_PATH} --branch master --depth 1
 	GOPATH=${CURDIR}/${BUILD_SRC} go get -d ${GITHUB_PATH}
 	# Add debianization
 	mkdir ${BUILD_SRC}/debian
