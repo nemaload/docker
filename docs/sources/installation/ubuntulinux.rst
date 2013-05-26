@@ -1,3 +1,7 @@
+:title: Requirements and Installation on Ubuntu Linux
+:description: Please note this project is currently under heavy development. It should not be used in production.
+:keywords: Docker, Docker documentation, requirements, virtualbox, vagrant, git, ssh, putty, cygwin, linux
+
 .. _ubuntu_linux:
 
 Ubuntu Linux
@@ -34,7 +38,7 @@ Due to a bug in LXC docker works best on the 3.8 kernel. Precise comes with a 3.
 .. code-block:: bash
 
    # install the backported kernel
-   sudo apt-get update && sudo apt-get install linux-image-3.8.0-19-generic
+   sudo apt-get update && sudo apt-get install linux-image-generic-lts-raring
 
    # reboot
    sudo reboot
