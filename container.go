@@ -51,6 +51,8 @@ type Container struct {
 
 	waitLock chan struct{}
 	Volumes  map[string]string
+
+	Binds []BindMap
 }
 
 type Config struct {
@@ -72,6 +74,13 @@ type Config struct {
 	Image        string // Name of the image as it was passed by the operator (eg. could be symbolic)
 	Volumes      map[string]struct{}
 	VolumesFrom  string
+	Binds        []string
+}
+
+type BindMap struct {
+	SrcPath string
+	DstPath string
+	Mode    string
 }
 
 func ParseRun(args []string, capabilities *Capabilities) (*Config, *flag.FlagSet, error) {
@@ -109,6 +118,9 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *flag.FlagSet
 	cmd.Var(flVolumes, "v", "Attach a data volume")
 
 	flVolumesFrom := cmd.String("volumes-from", "", "Mount volumes from the specified container")
+
+	var flBinds ListOpts
+	cmd.Var(&flBinds, "b", "Bind mount a volume from the host")
 
 	if err := cmd.Parse(args); err != nil {
 		return nil, cmd, err
@@ -152,6 +164,7 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *flag.FlagSet
 		Image:        image,
 		Volumes:      flVolumes,
 		VolumesFrom:  *flVolumesFrom,
+		Binds:        flBinds,
 	}
 
 	if capabilities != nil && *flMemory > 0 && !capabilities.SwapLimit {
@@ -456,6 +469,36 @@ func (container *Container) Start() error {
 			container.Volumes[volPath] = id
 		}
 	}
+
+	// Create the requested bind mounts
+	binds := []BindMap{}
+	for _, bind := range container.Config.Binds {
+		var src, dst, mode string
+		arr := strings.Split(bind, ":")
+		if len(arr) == 1 {
+			src = arr[0]
+			dst = arr[0]
+			mode = "rw"
+		} else if len(arr) == 2 {
+			src = arr[0]
+			dst = arr[1]
+			mode = "rw"
+		} else if len(arr) == 3 {
+			src = arr[0]
+			dst = arr[1]
+			mode = arr[2]
+		} else {
+			return fmt.Errorf("Invalid bind specification: %s", bind)
+		}
+
+		bindMap := BindMap{
+			SrcPath: src,
+			DstPath: dst,
+			Mode:    mode,
+		}
+		binds = append(binds, bindMap)
+	}
+	container.Binds = binds
 
 	if err := container.generateLXCConfig(); err != nil {
 		return err

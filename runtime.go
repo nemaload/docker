@@ -32,6 +32,7 @@ type Runtime struct {
 	autoRestart    bool
 	volumes        *Graph
 	srv            *Server
+	binds          map[string]string
 }
 
 var sysInitPath string

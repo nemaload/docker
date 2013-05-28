@@ -84,6 +84,11 @@ lxc.mount.entry = {{.ResolvConfPath}} {{$ROOTFS}}/etc/resolv.conf none bind,ro 0
 lxc.mount.entry = {{$realPath}} {{$ROOTFS}}/{{$virtualPath}} none bind,rw 0 0
 {{end}}
 {{end}}
+{{if .Binds}}
+{{range $bindMap := .Binds}}
+lxc.mount.entry = {{$bindMap.SrcPath}} {{$ROOTFS}}{{$bindMap.DstPath}} none bind,{{$bindMap.Mode}} 0 0
+{{end}}
+{{end}}
 
 # drop linux capabilities (apply mainly to the user root in the container)
 lxc.cap.drop = audit_control audit_write mac_admin mac_override mknod setfcap setpcap sys_admin sys_boot sys_module sys_nice sys_pacct sys_rawio sys_resource sys_time sys_tty_config
