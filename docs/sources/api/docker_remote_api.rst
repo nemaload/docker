@@ -24,7 +24,7 @@ Docker Remote API
 List containers
 ***************
 
-.. http:get:: /containers/ps
+.. http:get:: /containers/json
 
 	List containers
 
@@ -32,7 +32,7 @@ List containers
 
 	.. sourcecode:: http
 
-	   GET /containers/ps?all=1&before=8dfafdbc3a40 HTTP/1.1
+	   GET /containers/json?all=1&before=8dfafdbc3a40 HTTP/1.1
 	   
 	**Example response**:
 
@@ -378,7 +378,7 @@ Attach to a container
 
 .. http:post:: /containers/(id)/attach
 
-	Stop the container ``id``
+	Attach to the container ``id``
 
 	**Example request**:
 
@@ -826,6 +826,7 @@ Build an image from Dockerfile via stdin
 	   
 	   {{ STREAM }}
 
+	:query t: tag to be applied to the resulting image in case of success
 	:statuscode 200: no error
         :statuscode 500: server error
 
